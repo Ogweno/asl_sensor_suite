@@ -840,7 +840,6 @@ public class TimeSeriesUtils {
           eastData[i] * sinTheta;
     }
 
-
     return rotatedData;
   }
 
@@ -855,10 +854,15 @@ public class TimeSeriesUtils {
    * given angle, facing east.
    */
   public static DataBlock rotateX(DataBlock north, DataBlock east, double ang) {
-    DataBlock rotated = new DataBlock(east); // use east component metadata
+    long start = east.getStartTime();
+    long interval = east.getInterval();
+    String name = east.getName();
+    
     double[] northData = north.getData();
     double[] eastData = east.getData();
-    rotated.setData( rotateX(northData, eastData, ang) );
+    
+    DataBlock rotated = 
+        new DataBlock(rotateX(northData, eastData, ang), interval, name, start);
     return rotated;
   }
 
