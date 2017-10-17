@@ -326,8 +326,7 @@ extends Experiment implements ParameterValidator {
       double denom;
       if (!lowFreq) {
         if (freqs[i] < 1) {
-          //denom = 1; // weight everything up to 1Hz equally
-          denom = freqs[i]; // weight everything up to 1Hz equally
+          denom = 1; // weight everything up to 1Hz equally
         } else {
           denom = freqs[i]; // set everything (else) to 1/f weighting
         }
