@@ -53,11 +53,11 @@ public class RandomizedExperiment
 extends Experiment implements ParameterValidator {
 
   private static final double DELTA = 1E-12;
-  public static final double PEAK_MULTIPLIER = 0.5;
+  public static final double PEAK_MULTIPLIER = 0.8;
       //NumericUtils.PEAK_MULTIPLIER; // max pole-fit frequency
       // NumericUtils.PEAK_MULTIPLIER 
   
-  public static final boolean PRINT_EVERYTHING = false;
+  public static final boolean PRINT_EVERYTHING = true;
   // bool logic used so that if PRINT_EVERYTHING is false, this won't work
   public static final boolean OUTPUT_TO_TERMINAL = PRINT_EVERYTHING && true;
   // extend response curves
@@ -326,7 +326,8 @@ extends Experiment implements ParameterValidator {
       double denom;
       if (!lowFreq) {
         if (freqs[i] < 1) {
-          denom = 1; // weight everything up to 1Hz equally
+          //denom = 1; // weight everything up to 1Hz equally
+          denom = freqs[i]; // weight everything up to 1Hz equally
         } else {
           denom = freqs[i]; // set everything (else) to 1/f weighting
         }
