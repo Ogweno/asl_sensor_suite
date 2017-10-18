@@ -417,7 +417,7 @@ extends Experiment implements ParameterValidator {
     // high frequency cals are noisy and slow to converge
     // so we use a higher tolerance to deal with that issue
     if (!lowFreq) {
-      costTolerance = 1.0E-15;
+      costTolerance = 1.0E-10;
       paramTolerance = 1.0E-10;
     }
     
