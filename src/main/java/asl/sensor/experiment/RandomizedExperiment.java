@@ -389,6 +389,7 @@ extends Experiment implements ParameterValidator {
     initialPoleGuess = fitResponse.polesToVector(lowFreq, nyquist);
     initialZeroGuess = fitResponse.zerosToVector(lowFreq, nyquist);
     numZeros = initialZeroGuess.getDimension();
+// does the order these are in affect the way they change?
     initialGuess = initialZeroGuess.append(initialPoleGuess);
     
     if (OUTPUT_TO_TERMINAL) {
@@ -417,13 +418,13 @@ extends Experiment implements ParameterValidator {
     // high frequency cals are noisy and slow to converge
     // so we use a higher tolerance to deal with that issue
     if (!lowFreq) {
-      costTolerance = 1.0E-10;
-      paramTolerance = 1.0E-10;
+      costTolerance = 1.0E-5;
+      paramTolerance = 1.0E-5;
     }
     
     LeastSquaresOptimizer optimizer = new LevenbergMarquardtOptimizer().
         withCostRelativeTolerance(costTolerance).
-        withOrthoTolerance(1E-25).
+        withOrthoTolerance(1E-5).
         withParameterRelativeTolerance(paramTolerance);
     
     name = fitResponse.getName();
