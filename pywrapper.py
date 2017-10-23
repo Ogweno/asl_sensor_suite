@@ -11,8 +11,8 @@ from py4j.java_gateway import JavaGateway
 """
 def getCalc(cal, out, resp, embd, start, end, lf):
     gateway = JavaGateway()
-    gateway.entry_point.populateDataAndRun(cal, out, resp, embd, start, end, lf)
-    exp = gateway.entry_point.getExperiment()
+    exp = 
+	gateway.entry_point.populateDataAndRun(cal, out, resp, embd, start, end, lf)
     zerosIn = exp.getInitialZeros();
     zerosOut = exp.getFitZeros();
     polesIn = exp.getInitialPoles();
