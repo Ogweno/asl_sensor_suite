@@ -516,6 +516,8 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                     }
                     xNorm = FastMath.sqrt(xNorm);
 
+                    System.out.println("xNorm: " + xNorm);
+
                     // tests for convergence.
                     if (checker != null && checker.converged(iterationCounter.getCount(), previous, current)) {
                         return new OptimumImpl(current, evaluationCounter.getCount(), iterationCounter.getCount());
