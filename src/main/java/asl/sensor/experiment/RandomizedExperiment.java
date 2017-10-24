@@ -417,8 +417,8 @@ extends Experiment implements ParameterValidator {
     // high frequency cals are noisy and slow to converge
     // so this branch is to enable using higher tolerance to deal with that
     if (!lowFreq) {
-      costTolerance = 1.0E-5;
-      paramTolerance = 1.0E-5;
+      costTolerance = 1.0E-15;
+      paramTolerance = 1.0E-10;
     }
     
     LeastSquaresOptimizer optimizer = new LiterallyJustTheCommonsLMClass().
