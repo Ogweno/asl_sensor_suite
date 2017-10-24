@@ -176,7 +176,7 @@ public class FFTResultTest {
     }
   }
   
-  //@Test
+  @Test
   public void ohNoMorePrintFunctions() {
     
     // DecimalFormat df = new DecimalFormat(); // may need to tweak precision
