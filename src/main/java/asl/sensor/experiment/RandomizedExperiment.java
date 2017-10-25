@@ -56,7 +56,7 @@ extends Experiment implements ParameterValidator {
       //NumericUtils.PEAK_MULTIPLIER; // max pole-fit frequency
       // NumericUtils.PEAK_MULTIPLIER 
   
-  public static final boolean PRINT_EVERYTHING = false;
+  public static final boolean PRINT_EVERYTHING = true;
   // bool logic used so that if PRINT_EVERYTHING is false, this won't work
   public static final boolean OUTPUT_TO_TERMINAL = PRINT_EVERYTHING && true;
   

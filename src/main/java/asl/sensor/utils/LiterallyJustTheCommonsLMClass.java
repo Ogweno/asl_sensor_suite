@@ -507,7 +507,7 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                 
                 //System.out.println("DELTA: " + delta);
 
-                boolean idebug=true;
+                boolean idebug=false;
                 // test for successful iteration.
                 if (ratio >= 1.0e-4) {
                     // successful iteration, update the norm
@@ -521,7 +521,7 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
 
                     
                     if (idebug) {
-                       System.out.println("Accepted:"+ evaluationCounter.getCount()+ ", "+ xNorm + ", " + preRed + ", " +actRed + ", " +delta );
+                       System.out.println("Accepted, "+ evaluationCounter.getCount()+ ", "+ xNorm + ", " + preRed + ", " +actRed + ", " +delta );
                     }
 
                     // tests for convergence.
@@ -531,7 +531,7 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                 } else {
                     // failed iteration, reset the previous values
                     if(idebug) {
-                      System.out.println("Rejected:"+ evaluationCounter.getCount()+ ", "+ xNorm + ", " + preRed + ", " +actRed + ", " +delta );
+                      System.out.println("Rejected, "+ evaluationCounter.getCount()+ ", "+ xNorm + ", " + preRed + ", " +actRed + ", " +delta );
                        }
                     currentCost = previousCost;
                     for (int j = 0; j < solvedCols; ++j) {
