@@ -511,6 +511,9 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                 // test for successful iteration.
                 if (ratio >= 1.0e-4) {
                     // successful iteration, update the norm
+                    if (idebug) {
+                       System.out.println("Accepted, "+ evaluationCounter.getCount()+ ", "+ xNorm + ", " + preRed + ", " +actRed + ", " +delta );
+                    }
                     firstIteration = false;
                     xNorm = 0;
                     for (int k = 0; k < nC; ++k) {
@@ -520,12 +523,10 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                     xNorm = FastMath.sqrt(xNorm);
 
                     
-                    if (idebug) {
-                       System.out.println("Accepted, "+ evaluationCounter.getCount()+ ", "+ xNorm + ", " + preRed + ", " +actRed + ", " +delta );
-                    }
 
                     // tests for convergence.
                     if (checker != null && checker.converged(iterationCounter.getCount(), previous, current)) {
+                        System.out.println("using convergence checker");
                         return new OptimumImpl(current, evaluationCounter.getCount(), iterationCounter.getCount());
                     }
                 } else {
@@ -550,6 +551,7 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                      preRed <= costRelativeTolerance &&
                      ratio <= 2.0) ||
                     delta <= parRelativeTolerance * xNorm) {
+                    System.out.println("using convergence criteria");
                     return new OptimumImpl(current, evaluationCounter.getCount(), iterationCounter.getCount());
                 }
 
