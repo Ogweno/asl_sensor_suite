@@ -455,6 +455,8 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                 currentCost = current.getCost();
                 currentPoint = current.getPoint().toArray();
 
+                //System.out.println("evalNum: " + evaluationCounter.getCount());
+
                 // compute the scaled actual reduction
                 double actRed = -1.0;
                 if (0.1 * currentCost < previousCost) {
@@ -462,7 +464,7 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                     actRed = 1.0 - r * r;
                 }
                 
-                System.out.println("ACTRED: " + actRed);
+                //System.out.println("ACTRED: " + actRed);
 
                 // compute the scaled predicted reduction
                 // and the scaled directional derivative
@@ -484,7 +486,7 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                 double preRed = coeff1 + 2 * coeff2;
                 double dirDer = -(coeff1 + coeff2);
                 
-                System.out.println("PRERED: " + preRed);
+                //System.out.println("PRERED: " + preRed);
 
                 // ratio of the actual to the predicted reduction
                 ratio = (preRed == 0) ? 0 : (actRed / preRed);
@@ -503,8 +505,9 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                     lmPar *= 0.5;
                 }
                 
-                System.out.println("DELTA: " + delta);
+                //System.out.println("DELTA: " + delta);
 
+                boolean idebug=true;
                 // test for successful iteration.
                 if (ratio >= 1.0e-4) {
                     // successful iteration, update the norm
@@ -516,7 +519,10 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                     }
                     xNorm = FastMath.sqrt(xNorm);
 
-                    System.out.println("Table params:"+ evaluationCounter.getCount()+ ", "+ xNorm + ", " + preRed + ", " +actRed + ", " +delta );
+                    
+                    if (idebug) {
+                       System.out.println("Accepted:"+ evaluationCounter.getCount()+ ", "+ xNorm + ", " + preRed + ", " +actRed + ", " +delta );
+                    }
 
                     // tests for convergence.
                     if (checker != null && checker.converged(iterationCounter.getCount(), previous, current)) {
@@ -524,6 +530,9 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                     }
                 } else {
                     // failed iteration, reset the previous values
+                    if(idebug) {
+                      System.out.println("Rejected:"+ evaluationCounter.getCount()+ ", "+ xNorm + ", " + preRed + ", " +actRed + ", " +delta );
+                       }
                     currentCost = previousCost;
                     for (int j = 0; j < solvedCols; ++j) {
                         int pj = permutation[j];
