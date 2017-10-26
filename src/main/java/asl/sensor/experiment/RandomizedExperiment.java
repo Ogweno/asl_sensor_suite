@@ -272,6 +272,7 @@ extends Experiment implements ParameterValidator {
         observedResult[i] = 10 * Math.log10(estValMag);
         observedResult[i] -= subtractBy;
         
+// adam wants the argument side taken out... but will not adding this result in needing to adjust lengths elsewhere?
         double argument = phi;
         // argument /= rotateBy;
         // argument *= -1;
@@ -348,7 +349,7 @@ extends Experiment implements ParameterValidator {
     // System.out.println(maxMagWeight);
     
     // we have the candidate mag and phase, now to turn them into weight values
-    maxMagWeight = 1000. / maxMagWeight; // scale factor to weight over
+    maxMagWeight = 1000000000. / maxMagWeight; // scale factor to weight over
     if (maxArgWeight != 0.) {
       maxArgWeight = 1./ maxArgWeight;
     }
