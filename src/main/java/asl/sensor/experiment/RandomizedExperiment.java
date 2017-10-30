@@ -209,6 +209,7 @@ extends Experiment implements ParameterValidator {
     Complex[] denominatorPSDVals = 
         Arrays.copyOfRange(denominatorPSD.getFFT(), startIdx, extIdx);
     
+//find value at 1 Hz and then find the index of that value.
     for (int i = 0; i < freqs.length; ++i) {
       if ( freqs[i] == zeroTarget || ( i > 0 &&
           (freqs[i] > zeroTarget && freqs[i - 1] < zeroTarget) ) ) {
@@ -272,7 +273,6 @@ extends Experiment implements ParameterValidator {
         observedResult[i] = 10 * Math.log10(estValMag);
         observedResult[i] -= subtractBy;
         
-// adam wants the argument side taken out... but will not adding this result in needing to adjust lengths elsewhere?
         double argument = phi;
         // argument /= rotateBy;
         // argument *= -1;
@@ -349,7 +349,20 @@ extends Experiment implements ParameterValidator {
     // System.out.println(maxMagWeight);
     
     // we have the candidate mag and phase, now to turn them into weight values
-    maxMagWeight = 1.0e+06 / maxMagWeight; // scale factor to weight over
+    // find the relative magnitude of the phase and amplitude and create a scaling factor 
+    // based on that.
+    double maxYvalue=Math.abs(calcMag.getMaxY());
+    double minYvalue=Math.abs(calcMag.getMinY());
+    double absMaxYvalue = Math.max(maxYvalue,minYvalue);
+    double magEqualizer = Math.floor(Math.log10(absMaxYvalue));
+    double maxYArgvalue=Math.abs(calcArg.getMaxY());
+    double minYArgvalue=Math.abs(calcArg.getMinY());
+    double absMaxYArgvalue = Math.max(maxYArgvalue,minYArgvalue);
+    magEqualizer += Math.floor(Math.log10(absMaxYArgvalue));
+    magEqualizer= Math.pow(10.,magEqualizer+1);
+    //System.out.println("how does this look: "+ magEqualizer); //check value
+    maxMagWeight = magEqualizer / maxMagWeight; // scale factor to weight over
+
     if (maxArgWeight != 0.) {
       maxArgWeight = 1./ maxArgWeight;
     }
@@ -363,7 +376,9 @@ extends Experiment implements ParameterValidator {
         if (freqs[i] < 1) {
           denom = 1; // weight everything up to 1Hz equally
         } else {
-          denom = freqs[i]; // set everything (else) to 1/f weighting
+          //denom = 1; // weight everything up to 1Hz equally
+         //denom = freqs[i]*freqs[i]; // set everything (else) to 1/f weighting
+         denom = freqs[i]; // set everything (else) to 1/f weighting
         }
       } else {
         if (freqs[i] < .01) {
@@ -464,6 +479,7 @@ extends Experiment implements ParameterValidator {
       LeastSquaresOptimizer.Optimum optimum = optimizer.optimize(lsp);
       finalResultVector = optimum.getPoint();
       numIterations = optimum.getIterations();
+      fitResidual = optimum.getCost();
     } else {
       finalResultVector = initialGuess;
     }
@@ -585,10 +601,12 @@ extends Experiment implements ParameterValidator {
   }
 
   private void scaleValues(double[] unrot) {
+// what is this doing?
     int argStart = unrot.length / 2;
     double unrotScaleAmp = 10*Math.log10(unrot[normalIdx]);
     double unrotScaleArg = unrot[argStart + normalIdx];
     double phiPrev = 0;
+// why is this different for low frequency?
     if (lowFreq) {
       phiPrev = unrot[3*unrot.length/4];
     }
