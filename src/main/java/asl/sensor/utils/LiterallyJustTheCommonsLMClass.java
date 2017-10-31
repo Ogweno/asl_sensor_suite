@@ -334,6 +334,7 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
         //value will be reassigned in the loop
         Evaluation current = problem.evaluate(problem.getStart());
         double[] currentResiduals = current.getResiduals().toArray();
+        System.out.println(currentResiduals);
         double currentCost = current.getCost();
         double[] currentPoint = current.getPoint().toArray();
 
