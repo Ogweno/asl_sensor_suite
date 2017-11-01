@@ -241,7 +241,10 @@ extends Experiment implements ParameterValidator {
     Complex scaleValue = estResponse[normalIdx];
     double subtractBy = 10 * Math.log10( scaleValue.abs() );
     double rotateBy = NumericUtils.atanc(scaleValue);
-    System.out.println("Scale Value, subtract, rotate: "+scaleValue+", "+subtractBy+", "+rotateBy);
+    boolean idebug=false;
+    if (idebug) {
+       System.out.println("Scale Value, subtract, rotate: "+scaleValue+", "+subtractBy+", "+rotateBy);
+    }
     
     // data to fit poles to; first half of data is magnitudes of resp (dB)
     // second half of data is angles of resp (radians, scaled)
@@ -259,6 +262,7 @@ extends Experiment implements ParameterValidator {
       // estValue = estValue.subtract(scaleValue);
       double estValMag = estValue.abs();
       double phi = NumericUtils.atanc(estValue);
+      System.out.println(phi);
       phi -= rotateBy;
       
       phi = NumericUtils.unwrap(phi, phiPrev);
@@ -850,16 +854,14 @@ extends Experiment implements ParameterValidator {
     
     double[] mag = evaluateResponse(currentVars);
     
-    boolean idebug=true;
-    if (idebug) {
+    if (PRINT_EVERYTHING) {
       String in = Arrays.toString(currentVars);
       String out = Arrays.toString(mag);
       inputsPerCalculation.add(in);
       outputsPerCalculation.add(out);
-      //if (OUTPUT_TO_TERMINAL) {
-      if (idebug) {
-        //System.out.println(in);
-        //System.out.println(out);
+      if (OUTPUT_TO_TERMINAL) {
+        System.out.println(in);
+        System.out.println(out);
       }
     }
     
