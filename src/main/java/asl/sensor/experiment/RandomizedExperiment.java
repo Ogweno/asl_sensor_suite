@@ -241,6 +241,7 @@ extends Experiment implements ParameterValidator {
     Complex scaleValue = estResponse[normalIdx];
     double subtractBy = 10 * Math.log10( scaleValue.abs() );
     double rotateBy = NumericUtils.atanc(scaleValue);
+    System.out.println("Scale Value: " + scaleValue);
     
     // data to fit poles to; first half of data is magnitudes of resp (dB)
     // second half of data is angles of resp (radians, scaled)
@@ -279,6 +280,8 @@ extends Experiment implements ParameterValidator {
         observedResult[argIdx] = argument;
       }
       
+// this is just deciding if we want to plot in frequency or period.  
+// do jfreechart stuff.
       double xAxis;
       if (freqSpace) {
         xAxis = freqs[i];
