@@ -917,7 +917,6 @@ extends Experiment implements ParameterValidator {
       System.out.println("Current residual: " + resid);
     }
     
-    
     return new Pair<RealVector, RealMatrix>(result, jMat);
     
   }
