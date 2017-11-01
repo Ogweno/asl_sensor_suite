@@ -56,7 +56,7 @@ extends Experiment implements ParameterValidator {
       //NumericUtils.PEAK_MULTIPLIER; // max pole-fit frequency
       // NumericUtils.PEAK_MULTIPLIER 
   
-  public static final boolean PRINT_EVERYTHING = true;
+  public static final boolean PRINT_EVERYTHING = false;
   // bool logic used so that if PRINT_EVERYTHING is false, this won't work
   public static final boolean OUTPUT_TO_TERMINAL = PRINT_EVERYTHING && true;
   
@@ -66,7 +66,7 @@ extends Experiment implements ParameterValidator {
   // response class? It's still inherently nasty due to issues relating to
   // converting complex lists into arrays of doubles in order to use the solver
   
-  private double initialResidual, fitResidual;
+  private double initialResidual, fitResidual, sumSqResid;
   private List<Complex> initialPoles;
   private List<Complex> fitPoles;
   private List<Complex> initialZeros;
@@ -209,6 +209,7 @@ extends Experiment implements ParameterValidator {
     Complex[] denominatorPSDVals = 
         Arrays.copyOfRange(denominatorPSD.getFFT(), startIdx, extIdx);
     
+//find value at 1 Hz and then find the index of that value.
     for (int i = 0; i < freqs.length; ++i) {
       if ( freqs[i] == zeroTarget || ( i > 0 &&
           (freqs[i] > zeroTarget && freqs[i - 1] < zeroTarget) ) ) {
@@ -228,6 +229,7 @@ extends Experiment implements ParameterValidator {
       plottedResponse[i] = plottedResponse[i].multiply(scaleFactor);
 
     }
+// copy the plotted response on to the length of the frequencies we are using
     Complex[] estResponse = 
         Arrays.copyOfRange(plottedResponse, 0, freqs.length);
     
@@ -240,6 +242,7 @@ extends Experiment implements ParameterValidator {
     Complex scaleValue = estResponse[normalIdx];
     double subtractBy = 10 * Math.log10( scaleValue.abs() );
     double rotateBy = NumericUtils.atanc(scaleValue);
+    System.out.println("Scale Value: " + scaleValue);
     
     // data to fit poles to; first half of data is magnitudes of resp (dB)
     // second half of data is angles of resp (radians, scaled)
@@ -263,6 +266,7 @@ extends Experiment implements ParameterValidator {
       // iterative step
       phiPrev = phi;
       phi = Math.toDegrees(phi);
+      System.out.println(phi);
       
       if ( Double.isNaN(estValMag) ) {
         observedResult[i] = 0;
@@ -278,6 +282,8 @@ extends Experiment implements ParameterValidator {
         observedResult[argIdx] = argument;
       }
       
+// this is just deciding if we want to plot in frequency or period.  
+// do jfreechart stuff.
       double xAxis;
       if (freqSpace) {
         xAxis = freqs[i];
@@ -348,7 +354,20 @@ extends Experiment implements ParameterValidator {
     // System.out.println(maxMagWeight);
     
     // we have the candidate mag and phase, now to turn them into weight values
-    maxMagWeight = 1000. / maxMagWeight; // scale factor to weight over
+    // find the relative magnitude of the phase and amplitude and create a scaling factor 
+    // based on that.
+    double maxYvalue=Math.abs(calcMag.getMaxY());
+    double minYvalue=Math.abs(calcMag.getMinY());
+    double absMaxYvalue = Math.max(maxYvalue,minYvalue);
+    double magEqualizer = Math.floor(Math.log10(absMaxYvalue));
+    double maxYArgvalue=Math.abs(calcArg.getMaxY());
+    double minYArgvalue=Math.abs(calcArg.getMinY());
+    double absMaxYArgvalue = Math.max(maxYArgvalue,minYArgvalue);
+    magEqualizer += Math.floor(Math.log10(absMaxYArgvalue));
+    magEqualizer= Math.pow(10.,magEqualizer+1);
+    //System.out.println("how does this look: "+ magEqualizer); //check value
+    maxMagWeight = magEqualizer / maxMagWeight; // scale factor to weight over
+
     if (maxArgWeight != 0.) {
       maxArgWeight = 1./ maxArgWeight;
     }
@@ -362,7 +381,9 @@ extends Experiment implements ParameterValidator {
         if (freqs[i] < 1) {
           denom = 1; // weight everything up to 1Hz equally
         } else {
-          denom = freqs[i]; // set everything (else) to 1/f weighting
+          //denom = 1; // weight everything up to 1Hz equally
+         //denom = freqs[i]*freqs[i]; // set everything (else) to 1/f weighting
+         denom = freqs[i]; // set everything (else) to 1/f weighting
         }
       } else {
         if (freqs[i] < .01) {
@@ -389,6 +410,7 @@ extends Experiment implements ParameterValidator {
     initialZeroGuess = fitResponse.zerosToVector(lowFreq, nyquist);
     numZeros = initialZeroGuess.getDimension();
 // does the order these are in affect the way they change?
+// initial guess is just a set of Poles and Zeros
     initialGuess = initialZeroGuess.append(initialPoleGuess);
     
     if (OUTPUT_TO_TERMINAL) {
@@ -463,6 +485,8 @@ extends Experiment implements ParameterValidator {
       LeastSquaresOptimizer.Optimum optimum = optimizer.optimize(lsp);
       finalResultVector = optimum.getPoint();
       numIterations = optimum.getIterations();
+      fitResidual = optimum.getCost();
+      //sumSqResid = ();
     } else {
       finalResultVector = initialGuess;
     }
@@ -584,10 +608,12 @@ extends Experiment implements ParameterValidator {
   }
 
   private void scaleValues(double[] unrot) {
+// what is this doing?
     int argStart = unrot.length / 2;
     double unrotScaleAmp = 10*Math.log10(unrot[normalIdx]);
     double unrotScaleArg = unrot[argStart + normalIdx];
     double phiPrev = 0;
+// why is this different for low frequency?
     if (lowFreq) {
       phiPrev = unrot[3*unrot.length/4];
     }
@@ -826,14 +852,16 @@ extends Experiment implements ParameterValidator {
     
     double[] mag = evaluateResponse(currentVars);
     
-    if (PRINT_EVERYTHING) {
+    boolean idebug=true;
+    if (idebug) {
       String in = Arrays.toString(currentVars);
       String out = Arrays.toString(mag);
       inputsPerCalculation.add(in);
       outputsPerCalculation.add(out);
-      if (OUTPUT_TO_TERMINAL) {
-        System.out.println(in);
-        System.out.println(out);
+      //if (OUTPUT_TO_TERMINAL) {
+      if (idebug) {
+        //System.out.println(in);
+        //System.out.println(out);
       }
     }
     
@@ -916,6 +944,7 @@ extends Experiment implements ParameterValidator {
       }
       System.out.println("Current residual: " + resid);
     }
+    
     
     return new Pair<RealVector, RealMatrix>(result, jMat);
     
