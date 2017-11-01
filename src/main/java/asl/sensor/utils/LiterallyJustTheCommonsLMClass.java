@@ -329,14 +329,21 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
         double[] work3   = new double[nC];
 
 
+        boolean idebug=false;
         // Evaluate the function at the starting point and calculate its norm.
         evaluationCounter.incrementCount();
         //value will be reassigned in the loop
         Evaluation current = problem.evaluate(problem.getStart());
         double[] currentResiduals = current.getResiduals().toArray();
-        System.out.println(currentResiduals);
+        if (idebug) {
+           System.out.println(currentResiduals);
+        }
+        //if our cost is best fit to the amplitude and phase, then how is this calculated?  
+        // because this is done in the optimum.optimizer call at ca. line 480
         double currentCost = current.getCost();
         double[] currentPoint = current.getPoint().toArray();
+       // currentPoint is our PAZ values
+        System.out.println(currentPoint);
 
         // Outer loop.
         boolean firstIteration = true;
@@ -449,7 +456,6 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                     delta = FastMath.min(delta, lmNorm);
                 }
 
-                boolean idebug=false;
                 // Evaluate the function at x + p and calculate its norm.
                 evaluationCounter.incrementCount();
                 current = problem.evaluate(new ArrayRealVector(currentPoint));
@@ -462,7 +468,9 @@ public class LiterallyJustTheCommonsLMClass implements LeastSquaresOptimizer {
                     System.out.println("current cost :"+ currentCost);
                 }
                 currentPoint = current.getPoint().toArray();
-                System.out.println(current.getPoint());
+                if(idebug) {
+                    System.out.println(current.getPoint());
+                }
 
                 //System.out.println("evalNum: " + evaluationCounter.getCount());
 

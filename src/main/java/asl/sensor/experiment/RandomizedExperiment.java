@@ -66,7 +66,7 @@ extends Experiment implements ParameterValidator {
   // response class? It's still inherently nasty due to issues relating to
   // converting complex lists into arrays of doubles in order to use the solver
   
-  private double initialResidual, fitResidual;
+  private double initialResidual, fitResidual, sumSqResid;
   private List<Complex> initialPoles;
   private List<Complex> fitPoles;
   private List<Complex> initialZeros;
@@ -405,6 +405,7 @@ extends Experiment implements ParameterValidator {
     initialZeroGuess = fitResponse.zerosToVector(lowFreq, nyquist);
     numZeros = initialZeroGuess.getDimension();
 // does the order these are in affect the way they change?
+// initial guess is just a set of Poles and Zeros
     initialGuess = initialZeroGuess.append(initialPoleGuess);
     
     if (OUTPUT_TO_TERMINAL) {
@@ -480,6 +481,7 @@ extends Experiment implements ParameterValidator {
       finalResultVector = optimum.getPoint();
       numIterations = optimum.getIterations();
       fitResidual = optimum.getCost();
+      //sumSqResid = ();
     } else {
       finalResultVector = initialGuess;
     }
@@ -845,14 +847,16 @@ extends Experiment implements ParameterValidator {
     
     double[] mag = evaluateResponse(currentVars);
     
-    if (PRINT_EVERYTHING) {
+    boolean idebug=true;
+    if (idebug) {
       String in = Arrays.toString(currentVars);
       String out = Arrays.toString(mag);
       inputsPerCalculation.add(in);
       outputsPerCalculation.add(out);
-      if (OUTPUT_TO_TERMINAL) {
-        System.out.println(in);
-        System.out.println(out);
+      //if (OUTPUT_TO_TERMINAL) {
+      if (idebug) {
+        //System.out.println(in);
+        //System.out.println(out);
       }
     }
     

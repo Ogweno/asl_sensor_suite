@@ -1,0 +1,27 @@
+ 1. Read in calibration data
+ 2. Read in response file (usually nominal response)
+    2a. define if a high or low f calibration
+ 3. Use PSD to calculate the observed instrument response - observedResult
+ 4. calculate the range of frequencies over which to solve
+ 5. zero the response curve at given frequency
+     if low, use 0.02, if high use 1.0
+ 6. prepare obsResVector for plotting in the XYseries with the frequency vector
+ 7. define weighting matrix (~line 330)
+ 8. define initialGuess - PAZ to be fit
+ 9. define the observed result in the form needed for the solver
+10. call jacobian method: calculate the nominal response curve (RealVector) and 
+    the jacobian (RealMatrix)
+11. define the tolerances used for convergence of the least squares problem
+12. define the optimization method as levenberg marquardt
+13. define JFreeChart structures for plotting
+14. build the lsq problem using apache commons builder
+      define initialGuess, PAZ values from user-defined response file, as start
+      define the observedResult (from PSD calculation) as the target
+      pass the jacobian function as the model
+           this is where the jacobian is estimated at each step and where the 
+           PAZ are evaluated into a response curve - this calculation will be used
+           in the residual and cost function analysis
+15. initialize the least squares problem.
+16. spit out first PAZ update from the solver
+17. calculate new response curve and update residual and jacobian
+18. repeat until tolerance criteria is met
