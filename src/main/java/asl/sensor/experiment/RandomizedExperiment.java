@@ -262,8 +262,10 @@ extends Experiment implements ParameterValidator {
       // estValue = estValue.subtract(scaleValue);
       double estValMag = estValue.abs();
       double phi = NumericUtils.atanc(estValue);
-      System.out.println(phi);
       phi -= rotateBy;
+      if(idebug) {
+          System.out.println(phi);
+      }
       
       phi = NumericUtils.unwrap(phi, phiPrev);
       // iterative step
@@ -334,6 +336,7 @@ extends Experiment implements ParameterValidator {
     
     fireStateChange("Getting weighting....");
     
+// remember that argument is what you call phase
     maxArgWeight = 1.; maxMagWeight = 0.;
     Complex weightScaler = estResponse[normalIdx];
     double subtractWeight = 10 * Math.log10( weightScaler.abs() );
@@ -399,6 +402,7 @@ extends Experiment implements ParameterValidator {
     }
     
     DiagonalMatrix weightMat = new DiagonalMatrix(weights);
+    System.out.println(Arrays.toString(weights));
     
     fireStateChange("Getting estimate and setting up solver...");
     
