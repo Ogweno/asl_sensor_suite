@@ -56,7 +56,7 @@ extends Experiment implements ParameterValidator {
       //NumericUtils.PEAK_MULTIPLIER; // max pole-fit frequency
       // NumericUtils.PEAK_MULTIPLIER 
   
-  public static final boolean PRINT_EVERYTHING = false;
+  public static final boolean PRINT_EVERYTHING = true;
   // bool logic used so that if PRINT_EVERYTHING is false, this won't work
   public static final boolean OUTPUT_TO_TERMINAL = PRINT_EVERYTHING && true;
   
@@ -240,9 +240,11 @@ extends Experiment implements ParameterValidator {
     
     // scaling values, used to set curve values to 0 at 1Hz
     Complex scaleValue = estResponse[normalIdx];
-    double subtractBy = 10 * Math.log10( scaleValue.abs() );
+// defining a log multiplier so I only need to change one line to do this
+    double powerLog = 20.;
+    double subtractBy = powerLog * Math.log10( scaleValue.abs() );
     double rotateBy = NumericUtils.atanc(scaleValue);
-    System.out.println("Scale Value: " + scaleValue);
+    //System.out.println("Scale Value: " + scaleValue);
     
     // data to fit poles to; first half of data is magnitudes of resp (dB)
     // second half of data is angles of resp (radians, scaled)
@@ -266,14 +268,14 @@ extends Experiment implements ParameterValidator {
       // iterative step
       phiPrev = phi;
       phi = Math.toDegrees(phi);
-      System.out.println(phi);
+      //System.out.println(phi);
       
       if ( Double.isNaN(estValMag) ) {
         observedResult[i] = 0;
         observedResult[argIdx] = 0;
       } else {
         obsdAmps[i] = estValMag / scaleValue.abs();
-        observedResult[i] = 10 * Math.log10(estValMag);
+        observedResult[i] = powerLog * Math.log10(estValMag);
         observedResult[i] -= subtractBy;
         
         double argument = phi;
@@ -312,7 +314,7 @@ extends Experiment implements ParameterValidator {
         argument = 0;
       } else {
         //estValMag /= scaleValue.abs();
-        estValMag = 10 * Math.log10(estValMag);
+        estValMag = powerLog * Math.log10(estValMag);
         estValMag -= subtractBy;
         argument = phi;
       }
@@ -332,13 +334,14 @@ extends Experiment implements ParameterValidator {
     
     fireStateChange("Getting weighting....");
     
+    // This is the A. normalizing factor from the email sent 11/01 titled STS-6 response
     maxArgWeight = 1.; maxMagWeight = 0.;
     Complex weightScaler = estResponse[normalIdx];
-    double subtractWeight = 10 * Math.log10( weightScaler.abs() );
+    double subtractWeight = powerLog * Math.log10( weightScaler.abs() );
     double rotateWeight = NumericUtils.atanc(weightScaler);
     for (int i = 0; i < estResponse.length; ++i) {
       // int argIdx = i + appResponse.length;
-      double magCandidate = 10 * Math.log10( estResponse[i].abs() );
+      double magCandidate = powerLog * Math.log10( estResponse[i].abs() );
       magCandidate -= subtractWeight;
       double phiCandidate = Math.abs( NumericUtils.atanc(estResponse[i]) );
       phiCandidate -= rotateWeight;
@@ -353,20 +356,21 @@ extends Experiment implements ParameterValidator {
     fireStateChange("Setting weight matrix...");
     // System.out.println(maxMagWeight);
     
+    // This is the B. scaling factor from the email sent 11/01 titled STS-6 response
     // we have the candidate mag and phase, now to turn them into weight values
     // find the relative magnitude of the phase and amplitude and create a scaling factor 
     // based on that.
-    double maxYvalue=Math.abs(calcMag.getMaxY());
-    double minYvalue=Math.abs(calcMag.getMinY());
-    double absMaxYvalue = Math.max(maxYvalue,minYvalue);
-    double magEqualizer = Math.floor(Math.log10(absMaxYvalue));
-    double maxYArgvalue=Math.abs(calcArg.getMaxY());
-    double minYArgvalue=Math.abs(calcArg.getMinY());
-    double absMaxYArgvalue = Math.max(maxYArgvalue,minYArgvalue);
-    magEqualizer += Math.floor(Math.log10(absMaxYArgvalue));
-    magEqualizer= Math.pow(10.,magEqualizer+1);
+    //double maxYvalue=Math.abs(calcMag.getMaxY());
+    //double minYvalue=Math.abs(calcMag.getMinY());
+    //double absMaxYvalue = Math.max(maxYvalue,minYvalue);
+    //double magEqualizer = Math.floor(Math.log10(absMaxYvalue));
+    //double maxYArgvalue=Math.abs(calcArg.getMaxY());
+    //double minYArgvalue=Math.abs(calcArg.getMinY());
+    //double absMaxYArgvalue = Math.max(maxYArgvalue,minYArgvalue);
+    //magEqualizer += Math.floor(Math.log10(absMaxYArgvalue));
+    //magEqualizer= Math.pow(10.,magEqualizer+1);
     //System.out.println("how does this look: "+ magEqualizer); //check value
-    maxMagWeight = magEqualizer / maxMagWeight; // scale factor to weight over
+    //maxMagWeight = magEqualizer / maxMagWeight; // scale factor to weight over
 
     if (maxArgWeight != 0.) {
       maxArgWeight = 1./ maxArgWeight;
@@ -381,9 +385,10 @@ extends Experiment implements ParameterValidator {
         if (freqs[i] < 1) {
           denom = 1; // weight everything up to 1Hz equally
         } else {
-          //denom = 1; // weight everything up to 1Hz equally
+          denom = 1; // weight everything up to 1Hz equally
          //denom = freqs[i]*freqs[i]; // set everything (else) to 1/f weighting
-         denom = freqs[i]; // set everything (else) to 1/f weighting
+         // This is C. from the email chain mentioned above
+         //denom = freqs[i]; // set everything (else) to 1/f weighting
         }
       } else {
         if (freqs[i] < .01) {
@@ -445,7 +450,6 @@ extends Experiment implements ParameterValidator {
     
     LeastSquaresOptimizer optimizer = new LiterallyJustTheCommonsLMClass().
         withCostRelativeTolerance(costTolerance).
-        withOrthoTolerance(1E-5).
         withParameterRelativeTolerance(paramTolerance);
     
     // set up structures that will hold the initial and final response plots
@@ -609,8 +613,9 @@ extends Experiment implements ParameterValidator {
 
   private void scaleValues(double[] unrot) {
 // what is this doing?
+    double powerLog = 20.;
     int argStart = unrot.length / 2;
-    double unrotScaleAmp = 10*Math.log10(unrot[normalIdx]);
+    double unrotScaleAmp = powerLog*Math.log10(unrot[normalIdx]);
     double unrotScaleArg = unrot[argStart + normalIdx];
     double phiPrev = 0;
 // why is this different for low frequency?
@@ -619,7 +624,7 @@ extends Experiment implements ParameterValidator {
     }
     for (int i = 0; i < argStart; ++i) {
       int argIdx = argStart + i;
-      double db = 10*Math.log10(unrot[i]);
+      double db = powerLog*Math.log10(unrot[i]);
       unrot[i] = db - unrotScaleAmp;
       double phi = unrot[argIdx] - unrotScaleArg;
       phi = NumericUtils.unwrap(phi, phiPrev);
@@ -852,16 +857,16 @@ extends Experiment implements ParameterValidator {
     
     double[] mag = evaluateResponse(currentVars);
     
-    boolean idebug=true;
-    if (idebug) {
+    boolean idebug=false;
+    if (PRINT_EVERYTHING) {
       String in = Arrays.toString(currentVars);
       String out = Arrays.toString(mag);
       inputsPerCalculation.add(in);
       outputsPerCalculation.add(out);
-      //if (OUTPUT_TO_TERMINAL) {
-      if (idebug) {
-        //System.out.println(in);
-        //System.out.println(out);
+      if (OUTPUT_TO_TERMINAL) {
+      //if (idebug) {
+        System.out.println(in);
+        System.out.println(out);
       }
     }
     
@@ -942,7 +947,7 @@ extends Experiment implements ParameterValidator {
         double sumSqd = Math.pow(mag[i] - observedResult[i], 2);
         resid += weights[i] * sumSqd;
       }
-      System.out.println("Current residual: " + resid);
+      //System.out.println("Current residual: " + resid);
     }
     
     
