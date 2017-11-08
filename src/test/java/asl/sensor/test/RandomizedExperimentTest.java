@@ -236,6 +236,7 @@ public class RandomizedExperimentTest {
     String folder = "data/highfrq-majo/";
     String calInFile = "CB_BC1.512.seed";
     String sensorOutFile = "10_EHZ.512.seed";
+    double powerLog = 10;
     try {
       DataBlock cal = TimeSeriesUtils.getFirstTimeSeries(folder + calInFile);
       DataBlock out = 
@@ -267,8 +268,8 @@ public class RandomizedExperimentTest {
           continue;
         }
         // Complex scaleFreq = new Complex(0., NumericUtils.TAU * freqs[i]);
-        double dBNumer = 10 * Math.log10(outputFFT[i].abs());
-        double dBDenom = 10 * Math.log10(calFFT[i].abs());
+        double dBNumer = powerLog * Math.log10(outputFFT[i].abs());
+        double dBDenom = powerLog * Math.log10(calFFT[i].abs());
         numXYS.add(freqs[i], dBNumer);
         denXYS.add(freqs[i], dBDenom);
       }
@@ -311,6 +312,7 @@ public class RandomizedExperimentTest {
     String folder = "data/highfrq-majo/";
     String calInFile = "CB_BC1.512.seed";
     String sensorOutFile = "10_EHZ.512.seed";
+    double powerLog = 10;
     try {
       DataBlock cal = TimeSeriesUtils.getFirstTimeSeries(folder + calInFile);
       DataBlock out = 
@@ -343,11 +345,11 @@ public class RandomizedExperimentTest {
           continue;
         }
         Complex scaleFreq = new Complex(0., NumericUtils.TAU * freqs[i]);
-        double dBNumer = 10 * Math.log10(numerFFT[i].abs());
-        double dBDenom = 10 * Math.log10(denomFFT[i].abs());
+        double dBNumer = powerLog * Math.log10(numerFFT[i].abs());
+        double dBDenom = powerLog * Math.log10(denomFFT[i].abs());
         Complex div = numerFFT[i].divide(denomFFT[i].abs());
         Complex todB = div.multiply(scaleFreq);
-        double dBDiv = 10 * Math.log10(todB.abs());
+        double dBDiv = powerLog * Math.log10(todB.abs());
         numXYS.add(freqs[i], dBNumer);
         denXYS.add(freqs[i], dBDenom);
         dcvXYS.add(freqs[i], dBDiv);
@@ -589,6 +591,7 @@ public class RandomizedExperimentTest {
       DataStore ds = setUpTest3();
       DataBlock cal = ds.getBlock(0);
       DataBlock out = ds.getBlock(1);
+      double powerLog = 10;
       int maxLen = Math.max( out.size(), cal.size() );
       int windowSize = 2;
       while (windowSize <= maxLen) {
@@ -608,12 +611,12 @@ public class RandomizedExperimentTest {
       XYSeries subXYS = new XYSeries("Power-spectral dB subtraction");
       for (int i = 0; i < freqs.length; ++i) {
         if ( freqs[i] != 0 && freqs[i] <= .05 && freqs[i] >= .0001) {
-          double calDB = 10 * Math.log10( calSpec[i].abs() );
-          double outDB = 10 * Math.log10( outSpec[i].abs() );
+          double calDB = powerLog * Math.log10( calSpec[i].abs() );
+          double outDB = powerLog * Math.log10( outSpec[i].abs() );
           calXYS.add( 1/freqs[i], calDB );
           outXYS.add( 1/freqs[i], outDB );
           divXYS.add( 1/freqs[i], 
-              10 * Math.log10( outSpec[i].divide(calSpec[i].abs()).abs() ) );
+              powerLog * Math.log10( outSpec[i].divide(calSpec[i].abs()).abs() ) );
           subXYS.add( 1/freqs[i], outDB - calDB);
         }
       }
@@ -673,6 +676,7 @@ public class RandomizedExperimentTest {
   //@Test
   public void subtestLowFreqPSDsMAJO() {
     try {
+      double powerLog = 10;
       String calname = "./data/random_cal_lowfrq/BC0.512.seed";
       String outname = "./data/random_cal_lowfrq/BHZ.512.seed";
       String calMplex = TimeSeriesUtils.getMplexNameList(calname).get(0);
@@ -716,8 +720,8 @@ public class RandomizedExperimentTest {
       XYSeries outPXYS2 = new XYSeries("Out vs out cross-phase CT");
       for (int i = 0; i < freqs1.length; ++i) {
         if ( freqs1[i] != 0 && freqs1[i] <= .05 && freqs1[i] >= .0001) {
-          double calDB = 10 * Math.log10( calSpec[i].abs() );
-          double outDB = 10 * Math.log10( outSpec[i].abs() );
+          double calDB = powerLog * Math.log10( calSpec[i].abs() );
+          double outDB = powerLog * Math.log10( outSpec[i].abs() );
           double calP = NumericUtils.atanc(calSpec[i]);
           double outP = NumericUtils.atanc(outSpec[i]);
           calXYS.add( 1/freqs1[i], calDB );
@@ -729,8 +733,8 @@ public class RandomizedExperimentTest {
       
       for (int i = 0; i < freqs2.length; ++i) {
         if ( freqs2[i] != 0 && freqs2[i] <= .05 && freqs2[i] >= .0001) {
-          double calDB = 10 * Math.log10( calSpec2[i].abs() );
-          double outDB = 10 * Math.log10( outSpec2[i].abs() );
+          double calDB = powerLog * Math.log10( calSpec2[i].abs() );
+          double outDB = powerLog * Math.log10( outSpec2[i].abs() );
           double calP = NumericUtils.atanc(calSpec2[i]);
           double outP = NumericUtils.atanc(outSpec2[i]);
           calXYS2.add( 1/freqs2[i], calDB );

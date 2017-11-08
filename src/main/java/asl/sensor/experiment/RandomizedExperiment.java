@@ -56,7 +56,7 @@ extends Experiment implements ParameterValidator {
       //NumericUtils.PEAK_MULTIPLIER; // max pole-fit frequency
       // NumericUtils.PEAK_MULTIPLIER 
   
-  public static final boolean PRINT_EVERYTHING = true;
+  public static final boolean PRINT_EVERYTHING = false;
   // bool logic used so that if PRINT_EVERYTHING is false, this won't work
   public static final boolean OUTPUT_TO_TERMINAL = PRINT_EVERYTHING && true;
   
@@ -227,9 +227,13 @@ extends Experiment implements ParameterValidator {
       // convert from displacement to velocity
       Complex scaleFactor = new Complex(0., NumericUtils.TAU * freqsFull[i]);
       plottedResponse[i] = plottedResponse[i].multiply(scaleFactor);
-
     }
 // copy the plotted response on to the length of the frequencies we are using
+    // 3-point moving average
+    // plottedResponse = 
+    //    NumericUtils.multipointMovingAverage(plottedResponse, 3);
+    // the range over the fit is trimmed from the full plot
+    // (i.e., we may fit up to 50% of nyquist but display up to 80% in HF cals)
     Complex[] estResponse = 
         Arrays.copyOfRange(plottedResponse, 0, freqs.length);
     
@@ -241,10 +245,10 @@ extends Experiment implements ParameterValidator {
     // scaling values, used to set curve values to 0 at 1Hz
     Complex scaleValue = estResponse[normalIdx];
 // defining a log multiplier so I only need to change one line to do this
-    double powerLog = 20.;
+    double powerLog = 10.;
     double subtractBy = powerLog * Math.log10( scaleValue.abs() );
     double rotateBy = NumericUtils.atanc(scaleValue);
-    //System.out.println("Scale Value: " + scaleValue);
+    System.out.println("Scale Value: " + scaleValue);
     
     // data to fit poles to; first half of data is magnitudes of resp (dB)
     // second half of data is angles of resp (radians, scaled)
@@ -268,14 +272,14 @@ extends Experiment implements ParameterValidator {
       // iterative step
       phiPrev = phi;
       phi = Math.toDegrees(phi);
-      //System.out.println(phi);
+      System.out.println(phi);
       
       if ( Double.isNaN(estValMag) ) {
         observedResult[i] = 0;
         observedResult[argIdx] = 0;
       } else {
         obsdAmps[i] = estValMag / scaleValue.abs();
-        observedResult[i] = powerLog * Math.log10(estValMag);
+        observedResult[i] = 10 * Math.log10(estValMag);
         observedResult[i] -= subtractBy;
         
         double argument = phi;
@@ -283,9 +287,12 @@ extends Experiment implements ParameterValidator {
         // argument *= -1;
         observedResult[argIdx] = argument;
       }
+// let's try normalizing between 1 and 0.
+
+
       
 // this is just deciding if we want to plot in frequency or period.  
-// do jfreechart stuff.
+// do jfreechart stuff. - like pre
       double xAxis;
       if (freqSpace) {
         xAxis = freqs[i];
@@ -314,7 +321,7 @@ extends Experiment implements ParameterValidator {
         argument = 0;
       } else {
         //estValMag /= scaleValue.abs();
-        estValMag = powerLog * Math.log10(estValMag);
+        estValMag = 10 * Math.log10(estValMag);
         estValMag -= subtractBy;
         argument = phi;
       }
@@ -334,43 +341,54 @@ extends Experiment implements ParameterValidator {
     
     fireStateChange("Getting weighting....");
     
-    // This is the A. normalizing factor from the email sent 11/01 titled STS-6 response
     maxArgWeight = 1.; maxMagWeight = 0.;
     Complex weightScaler = estResponse[normalIdx];
-    double subtractWeight = powerLog * Math.log10( weightScaler.abs() );
+    double subtractWeight = 10 * Math.log10( weightScaler.abs() );
     double rotateWeight = NumericUtils.atanc(weightScaler);
     for (int i = 0; i < estResponse.length; ++i) {
       // int argIdx = i + appResponse.length;
-      double magCandidate = powerLog * Math.log10( estResponse[i].abs() );
+      double magCandidate = 10 * Math.log10( estResponse[i].abs() );
       magCandidate -= subtractWeight;
       double phiCandidate = Math.abs( NumericUtils.atanc(estResponse[i]) );
       phiCandidate -= rotateWeight;
-      if ( magCandidate > maxMagWeight ) {
-        maxMagWeight = magCandidate;
+      if ( Math.abs(magCandidate) > maxMagWeight ) {
+        maxMagWeight = Math.abs(magCandidate);
+      }
+      if (phiCandidate < 0.) {
+          phiCandidate *= -1.;
       }
       if ( phiCandidate > maxArgWeight ) {
         maxArgWeight = phiCandidate;
       }
     }
     
+    System.out.println(maxMagWeight+", "+maxArgWeight);
+    System.out.println("or this:");
+    
     fireStateChange("Setting weight matrix...");
     // System.out.println(maxMagWeight);
     
+    boolean Weight = true;
     // This is the B. scaling factor from the email sent 11/01 titled STS-6 response
     // we have the candidate mag and phase, now to turn them into weight values
     // find the relative magnitude of the phase and amplitude and create a scaling factor 
     // based on that.
-    //double maxYvalue=Math.abs(calcMag.getMaxY());
-    //double minYvalue=Math.abs(calcMag.getMinY());
-    //double absMaxYvalue = Math.max(maxYvalue,minYvalue);
-    //double magEqualizer = Math.floor(Math.log10(absMaxYvalue));
-    //double maxYArgvalue=Math.abs(calcArg.getMaxY());
-    //double minYArgvalue=Math.abs(calcArg.getMinY());
-    //double absMaxYArgvalue = Math.max(maxYArgvalue,minYArgvalue);
-    //magEqualizer += Math.floor(Math.log10(absMaxYArgvalue));
-    //magEqualizer= Math.pow(10.,magEqualizer+1);
-    //System.out.println("how does this look: "+ magEqualizer); //check value
-    //maxMagWeight = magEqualizer / maxMagWeight; // scale factor to weight over
+    if (Weight) {
+    double maxYvalue=Math.abs(calcMag.getMaxY());
+    double minYvalue=Math.abs(calcMag.getMinY());
+    double absMaxYvalue = Math.max(maxYvalue,minYvalue);
+    double powerOfMag = Math.floor(Math.log10(absMaxYvalue));
+    double maxYArgvalue=Math.abs(calcArg.getMaxY());
+    double minYArgvalue=Math.abs(calcArg.getMinY());
+    double absMaxYArgvalue = Math.max(maxYArgvalue,minYArgvalue);
+    double powerOfArg = Math.floor(Math.log10(absMaxYArgvalue));
+    double magEqualizer= Math.pow(10.,powerOfMag+powerOfArg+1);
+    System.out.println("how does this look: "+ magEqualizer); //check value
+    maxMagWeight = magEqualizer / maxMagWeight; // scale factor to weight over
+    }
+    // we have the candidate mag and phase, now to turn them into weight values
+    // find the relative magnitude of the phase and amplitude and create a scaling factor 
+    // based on that.
 
     if (maxArgWeight != 0.) {
       maxArgWeight = 1./ maxArgWeight;
@@ -385,9 +403,9 @@ extends Experiment implements ParameterValidator {
         if (freqs[i] < 1) {
           denom = 1; // weight everything up to 1Hz equally
         } else {
-          denom = 1; // weight everything up to 1Hz equally
-         //denom = freqs[i]*freqs[i]; // set everything (else) to 1/f weighting
-         // This is C. from the email chain mentioned above
+          //This is C. from the email chain mentioned above
+         // denom = 1; // weight everything equally
+          denom = freqs[i]*freqs[i]; // set everything (else) to 1/f weighting
          //denom = freqs[i]; // set everything (else) to 1/f weighting
         }
       } else {
@@ -450,6 +468,7 @@ extends Experiment implements ParameterValidator {
     
     LeastSquaresOptimizer optimizer = new LiterallyJustTheCommonsLMClass().
         withCostRelativeTolerance(costTolerance).
+        withOrthoTolerance(1E-5).
         withParameterRelativeTolerance(paramTolerance);
     
     // set up structures that will hold the initial and final response plots
@@ -521,7 +540,6 @@ extends Experiment implements ParameterValidator {
     initialValues = new double[freqsFull.length * 2];
     fitValues = new double[freqsFull.length * 2];
     for (int i = 0; i < freqsFull.length; ++i) {
-
       int argIdx = freqsFull.length + i;
       initialValues[i] = init[i].abs();
       initialValues[argIdx] = NumericUtils.atanc(init[i]);
@@ -613,9 +631,9 @@ extends Experiment implements ParameterValidator {
 
   private void scaleValues(double[] unrot) {
 // what is this doing?
-    double powerLog = 20.;
+    double powerLog =  20.;
     int argStart = unrot.length / 2;
-    double unrotScaleAmp = powerLog*Math.log10(unrot[normalIdx]);
+    double unrotScaleAmp = 10*Math.log10(unrot[normalIdx]);
     double unrotScaleArg = unrot[argStart + normalIdx];
     double phiPrev = 0;
 // why is this different for low frequency?
@@ -624,7 +642,7 @@ extends Experiment implements ParameterValidator {
     }
     for (int i = 0; i < argStart; ++i) {
       int argIdx = argStart + i;
-      double db = powerLog*Math.log10(unrot[i]);
+      double db = 10*Math.log10(unrot[i]);
       unrot[i] = db - unrotScaleAmp;
       double phi = unrot[argIdx] - unrotScaleArg;
       phi = NumericUtils.unwrap(phi, phiPrev);
@@ -857,12 +875,15 @@ extends Experiment implements ParameterValidator {
     
     double[] mag = evaluateResponse(currentVars);
     
-    boolean idebug=false;
-    if (PRINT_EVERYTHING) {
+    boolean idebug=true;
+    if (idebug) {
       String in = Arrays.toString(currentVars);
       String out = Arrays.toString(mag);
       inputsPerCalculation.add(in);
       outputsPerCalculation.add(out);
+      if (OUTPUT_TO_TERMINAL) {
+        System.out.println(in);
+        System.out.println(out);
       if (OUTPUT_TO_TERMINAL) {
       //if (idebug) {
         System.out.println(in);
@@ -908,10 +929,6 @@ extends Experiment implements ParameterValidator {
     RealVector result = MatrixUtils.createRealVector(mag);
     RealMatrix jMat = MatrixUtils.createRealMatrix(jacobian);
     if (OUTPUT_TO_TERMINAL) {
-      // currently only looking at data about the sign of the jacobian
-      int colDim = jMat.getColumnDimension();
-      double[] rmsJbn = new double[colDim];
-      for (int i = 0; i < colDim; ++i) {
         RealVector v = jMat.getColumnVector(i);
         double rms = 0.;
         int numPositive = 0;
@@ -942,18 +959,19 @@ extends Experiment implements ParameterValidator {
       }
       
       // get the residual values and print that out
+      // is the weighting applied to these values correctly?
+      // Apache commons uses the weighted residual.
       double resid = 0.;
       for (int i = 0; i < mag.length; ++i) {
         double sumSqd = Math.pow(mag[i] - observedResult[i], 2);
         resid += weights[i] * sumSqd;
       }
-      //System.out.println("Current residual: " + resid);
+      System.out.println("Current residual: " + resid);
     }
     
     
     return new Pair<RealVector, RealMatrix>(result, jMat);
-    
-  }
+  }  
   
   @Override
   public int[] listActiveResponseIndices() {
