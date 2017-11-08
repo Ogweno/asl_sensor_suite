@@ -352,7 +352,25 @@ extends Experiment implements ParameterValidator {
     // System.out.println(maxMagWeight);
     
     // we have the candidate mag and phase, now to turn them into weight values
-    maxMagWeight = 1000. / maxMagWeight; // scale factor to weight over
+    //maxMagWeight = 1000. / maxMagWeight; // scale factor to weight over
+    // This is the B. scaling factor from the email sent 11/01 titled STS-6 response
+    // we have the candidate mag and phase, now to turn them into weight values
+    // find the relative magnitude of the phase and amplitude and create a scaling factor
+    // based on that.
+    boolean Weight = true;
+    if (Weight) {
+    double maxYvalue=Math.abs(calcMag.getMaxY());
+    double minYvalue=Math.abs(calcMag.getMinY());
+    double absMaxYvalue = Math.max(maxYvalue,minYvalue);
+    double powerOfMag = Math.floor(Math.log10(absMaxYvalue));
+    double maxYArgvalue=Math.abs(calcArg.getMaxY());
+    double minYArgvalue=Math.abs(calcArg.getMinY());
+    double absMaxYArgvalue = Math.max(maxYArgvalue,minYArgvalue);
+    double powerOfArg = Math.floor(Math.log10(absMaxYArgvalue));
+    double magEqualizer= Math.pow(10.,powerOfMag+powerOfArg+1);
+    System.out.println("how does this look: "+ magEqualizer); //check value
+    maxMagWeight = magEqualizer / maxMagWeight; // scale factor to weight over
+    }
     if (maxArgWeight != 0.) {
       maxArgWeight = 1./ maxArgWeight;
     }
