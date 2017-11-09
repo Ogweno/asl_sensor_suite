@@ -56,7 +56,7 @@ extends Experiment implements ParameterValidator {
       //NumericUtils.PEAK_MULTIPLIER; // max pole-fit frequency
       // NumericUtils.PEAK_MULTIPLIER 
   
-  public static final boolean PRINT_EVERYTHING = false;
+  public static final boolean PRINT_EVERYTHING = true;
   // bool logic used so that if PRINT_EVERYTHING is false, this won't work
   public static final boolean OUTPUT_TO_TERMINAL = PRINT_EVERYTHING && true;
   
@@ -421,7 +421,7 @@ extends Experiment implements ParameterValidator {
     initialGuess = initialZeroGuess.append(initialPoleGuess);
     
     if (OUTPUT_TO_TERMINAL) {
-      System.out.println( Arrays.toString(observedResult) );
+      System.out.println( "observed Result: "+Arrays.toString(observedResult) );
     }
     
     // now, solve for the response that gets us the best-fit response curve
@@ -860,7 +860,7 @@ extends Experiment implements ParameterValidator {
       inputsPerCalculation.add(in);
       outputsPerCalculation.add(out);
       if (OUTPUT_TO_TERMINAL) {
-        System.out.println(in);
+        System.out.println("this is in "+in);
         System.out.println(out);
       }
     }
