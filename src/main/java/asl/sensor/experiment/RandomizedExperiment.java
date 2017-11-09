@@ -376,7 +376,7 @@ extends Experiment implements ParameterValidator {
        System.out.println("how does this look: "+ magEqualizer); //check value
        maxMagWeight = magEqualizer / maxMagWeight; // scale factor to weight over
     } else {
-       maxMagWeight=1000./maxMagWeight
+       maxMagWeight=1000./maxMagWeight;
     }      
 
     if (maxArgWeight != 0.) {
