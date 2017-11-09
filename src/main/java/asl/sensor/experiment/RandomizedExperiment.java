@@ -331,6 +331,7 @@ extends Experiment implements ParameterValidator {
     
     fireStateChange("Getting weighting....");
     
+// we may want to set this to be the absolute value.
     maxArgWeight = 1.; maxMagWeight = 0.;
     Complex weightScaler = estResponse[normalIdx];
     double subtractWeight = powerLog * Math.log10( weightScaler.abs() );
@@ -360,18 +361,21 @@ extends Experiment implements ParameterValidator {
     // based on that.
     boolean Weight = true;
     if (Weight) {
-    double maxYvalue=Math.abs(calcMag.getMaxY());
-    double minYvalue=Math.abs(calcMag.getMinY());
-    double absMaxYvalue = Math.max(maxYvalue,minYvalue);
-    double powerOfMag = Math.floor(Math.log10(absMaxYvalue));
-    double maxYArgvalue=Math.abs(calcArg.getMaxY());
-    double minYArgvalue=Math.abs(calcArg.getMinY());
-    double absMaxYArgvalue = Math.max(maxYArgvalue,minYArgvalue);
-    double powerOfArg = Math.floor(Math.log10(absMaxYArgvalue));
-    double magEqualizer= Math.pow(10.,powerOfMag+powerOfArg+1);
-    System.out.println("how does this look: "+ magEqualizer); //check value
-    maxMagWeight = magEqualizer / maxMagWeight; // scale factor to weight over
-    }
+       double maxYvalue=Math.abs(calcMag.getMaxY());
+       double minYvalue=Math.abs(calcMag.getMinY());
+       double absMaxYvalue = Math.max(maxYvalue,minYvalue);
+       double powerOfMag = Math.floor(Math.log10(absMaxYvalue));
+       double maxYArgvalue=Math.abs(calcArg.getMaxY());
+       double minYArgvalue=Math.abs(calcArg.getMinY());
+       double absMaxYArgvalue = Math.max(maxYArgvalue,minYArgvalue);
+       double powerOfArg = Math.floor(Math.log10(absMaxYArgvalue));
+       double magEqualizer= Math.pow(10.,powerOfMag+powerOfArg+1);
+       System.out.println("how does this look: "+ magEqualizer); //check value
+       maxMagWeight = magEqualizer / maxMagWeight; // scale factor to weight over
+    } else {
+       maxMagWeight=1000./maxMagWeight
+    }      
+
     if (maxArgWeight != 0.) {
       maxArgWeight = 1./ maxArgWeight;
     }
@@ -445,7 +449,6 @@ extends Experiment implements ParameterValidator {
     
     LeastSquaresOptimizer optimizer = new LiterallyJustTheCommonsLMClass().
         withCostRelativeTolerance(costTolerance).
-        withOrthoTolerance(1E-25).
         withParameterRelativeTolerance(paramTolerance);
     
     // set up structures that will hold the initial and final response plots
