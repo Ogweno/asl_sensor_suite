@@ -362,7 +362,7 @@ extends Experiment implements ParameterValidator {
     // we have the candidate mag and phase, now to turn them into weight values
     // find the relative magnitude of the phase and amplitude and create a scaling factor
     // based on that.
-    boolean Weight = true;
+    boolean Weight = false;
     if (Weight) {
        double maxYvalue=Math.abs(calcMag.getMaxY());
        double minYvalue=Math.abs(calcMag.getMinY());
@@ -922,17 +922,17 @@ extends Experiment implements ParameterValidator {
         }
         rms /= v.getDimension();
         rms = Math.sqrt(rms);
-        String init = "Jacobian value for variable " + i;
-        if (numPositive > numNegative) {
-          System.out.println(init + " is mostly positive.");
-          System.out.println("Values: " + numPositive + ", " + numNegative);
-        } else if (numPositive < numNegative) {
-          System.out.println(init + " is mostly negative.");
-          System.out.println("Values: " + numPositive + ", " + numNegative);
-        } else {
-          System.out.println(init + " has equal +/-.");
-          System.out.println("Values: " + numPositive + ", " + numNegative);
-        }
+        //String init = "Jacobian value for variable " + i;
+        //if (numPositive > numNegative) {
+         // System.out.println(init + " is mostly positive.");
+          //System.out.println("Values: " + numPositive + ", " + numNegative);
+        //} else if (numPositive < numNegative) {
+         // System.out.println(init + " is mostly negative.");
+          //System.out.println("Values: " + numPositive + ", " + numNegative);
+        //} else {
+         // System.out.println(init + " has equal +/-.");
+          //System.out.println("Values: " + numPositive + ", " + numNegative);
+        //}
         System.out.println("The RMS value is " + rms);
       }
       
