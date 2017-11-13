@@ -227,12 +227,13 @@ extends Experiment implements ParameterValidator {
       Complex scaleFactor = new Complex(0., NumericUtils.TAU * freqsFull[i]);
       plottedResponse[i] = plottedResponse[i].multiply(scaleFactor);
     }
+    //
     // 3-point moving average
-  
-    //if (!lowfreq){
-     //  plottedResponse = 
-      //    NumericUtils.multipointMovingAverage(plottedResponse, 3);
-   // }
+    //if (!lowFreq){
+    //   plottedResponse = 
+    //      NumericUtils.multipointMovingAverage(plottedResponse, 3);
+    //}
+    //
     // the range over the fit is trimmed from the full plot
     // (i.e., we may fit up to 50% of nyquist but display up to 80% in HF cals)
     Complex[] estResponse = 
