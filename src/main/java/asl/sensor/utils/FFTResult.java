@@ -20,6 +20,7 @@ import org.jfree.data.xy.XYSeries;
 
 import asl.sensor.input.DataBlock;
 import asl.sensor.input.InstrumentResponse;
+import uk.me.berndporr.iirj.ChebyshevI;
 
 /**
  * Holds the data returned from a power spectral density calculation
@@ -49,8 +50,19 @@ public class FFTResult {
    */
   public static double[] 
   bandFilter(double[] toFilt, double sps, double low, double high) {
-    System.out.println("in bandFilter");
-    return bandFilterWithCuts(toFilt, sps, low, high, 0., sps);
+    
+    ChebyshevI casc = new ChebyshevI();
+    // order 1 filter
+    casc.bandPass(1, sps, (high-low)/2, high-low, 1.);
+    
+    double[] filtered = new double[toFilt.length];
+    for (int i = 0; i < toFilt.length; ++i) {
+      filtered[i] = casc.filter(toFilt[i]);
+    }
+    
+    return filtered;
+    
+    //return bandFilterWithCuts(toFilt, sps, low, high, 0., sps);
     /*
     Complex[] fft = simpleFFT(toFilt);
     
@@ -260,7 +272,7 @@ public class FFTResult {
       while (str != null) {
         String[] values = str.split("\\s+");
         double x = Double.parseDouble(values[0]); // period, in seconds
-        if (x > 1.0E3) {
+        if (x > 1.0E3 + 1) {
           break;
         }
         double y = Double.parseDouble(values[1]);
@@ -303,7 +315,7 @@ public class FFTResult {
       while (str != null) {
         String[] values = str.split("\\s+");
         double x = Double.parseDouble(values[0]); // period, in seconds
-        if (x > 1.0E3) {
+        if (x > 1.0E3 + 1) {
           break;
         }
         double y = Double.parseDouble(values[3]);

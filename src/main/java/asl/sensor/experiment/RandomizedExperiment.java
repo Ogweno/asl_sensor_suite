@@ -52,7 +52,7 @@ public class RandomizedExperiment
 extends Experiment implements ParameterValidator {
 
   private static final double DELTA = 1E-12;
-  public static final double PEAK_MULTIPLIER = 0.8;
+  public static final double PEAK_MULTIPLIER = 0.4;
       //NumericUtils.PEAK_MULTIPLIER; // max pole-fit frequency
       // NumericUtils.PEAK_MULTIPLIER 
   
@@ -229,11 +229,7 @@ extends Experiment implements ParameterValidator {
     }
     //
     // 3-point moving average
-    //if (!lowFreq){
-    //   plottedResponse = 
-    //      NumericUtils.multipointMovingAverage(plottedResponse, 3);
-    //}
-    //
+    plottedResponse = NumericUtils.multipointMovingAverage(plottedResponse, 5);
     // the range over the fit is trimmed from the full plot
     // (i.e., we may fit up to 50% of nyquist but display up to 80% in HF cals)
     Complex[] estResponse = 
@@ -246,8 +242,7 @@ extends Experiment implements ParameterValidator {
     
     // scaling values, used to set curve values to 0 at 1Hz
     Complex scaleValue = estResponse[normalIdx];
-    double powerLog = 10;
-    double subtractBy = powerLog * Math.log10( scaleValue.abs() );
+    double subtractBy = 20 * Math.log10( scaleValue.abs() );
     double rotateBy = NumericUtils.atanc(scaleValue);
     
     // data to fit poles to; first half of data is magnitudes of resp (dB)
@@ -278,7 +273,7 @@ extends Experiment implements ParameterValidator {
         observedResult[argIdx] = 0;
       } else {
         obsdAmps[i] = estValMag / scaleValue.abs();
-        observedResult[i] = powerLog * Math.log10(estValMag);
+        observedResult[i] = 20 * Math.log10(estValMag);
         observedResult[i] -= subtractBy;
         
         double argument = phi;
@@ -315,7 +310,7 @@ extends Experiment implements ParameterValidator {
         argument = 0;
       } else {
         //estValMag /= scaleValue.abs();
-        estValMag = powerLog * Math.log10(estValMag);
+        estValMag = 20 * Math.log10(estValMag);
         estValMag -= subtractBy;
         argument = phi;
       }
@@ -338,11 +333,11 @@ extends Experiment implements ParameterValidator {
 // we may want to set this to be the absolute value.
     maxArgWeight = 1.; maxMagWeight = 0.;
     Complex weightScaler = estResponse[normalIdx];
-    double subtractWeight = powerLog * Math.log10( weightScaler.abs() );
+    double subtractWeight = 20 * Math.log10( weightScaler.abs() );
     double rotateWeight = NumericUtils.atanc(weightScaler);
     for (int i = 0; i < estResponse.length; ++i) {
       // int argIdx = i + appResponse.length;
-      double magCandidate = powerLog * Math.log10( estResponse[i].abs() );
+      double magCandidate = 20 * Math.log10( estResponse[i].abs() );
       magCandidate -= subtractWeight;
       double phiCandidate = Math.abs( NumericUtils.atanc(estResponse[i]) );
       phiCandidate -= rotateWeight;
@@ -613,8 +608,7 @@ extends Experiment implements ParameterValidator {
 
   private void scaleValues(double[] unrot) {
     int argStart = unrot.length / 2;
-    double powerLog = 10;
-    double unrotScaleAmp = powerLog*Math.log10(unrot[normalIdx]);
+    double unrotScaleAmp = 20 * Math.log10(unrot[normalIdx]);
     double unrotScaleArg = unrot[argStart + normalIdx];
     double phiPrev = 0;
     if (lowFreq) {
@@ -622,7 +616,7 @@ extends Experiment implements ParameterValidator {
     }
     for (int i = 0; i < argStart; ++i) {
       int argIdx = argStart + i;
-      double db = powerLog*Math.log10(unrot[i]);
+      double db = 20 * Math.log10(unrot[i]);
       unrot[i] = db - unrotScaleAmp;
       double phi = unrot[argIdx] - unrotScaleArg;
       phi = NumericUtils.unwrap(phi, phiPrev);
@@ -691,6 +685,14 @@ extends Experiment implements ParameterValidator {
    */
   public double getFitResidual() {
     return fitResidual;
+  }
+  
+  /**
+   * Provides a handle to the fit response object for parameter output
+   * @return the best-fit response
+   */
+  public InstrumentResponse getFitResponse() {
+    return fitResponse;
   }
   
   /**
